@@ -236,6 +236,33 @@
             transform: scale(0.9);
         }
 
+        .multiplier-btn {
+            position: fixed;
+            bottom: calc(38px + env(safe-area-inset-bottom, 0px));
+            right: 110px;
+            width: 45px;
+            height: 45px;
+            padding: 0;
+            border: none;
+            background: linear-gradient(135deg, #ffa751 0%, #ffe259 100%);
+            color: white;
+            border-radius: 50%;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 3px 12px rgba(255, 167, 81, 0.4);
+            transition: all 0.2s ease;
+            outline: none;
+            z-index: 101;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .multiplier-btn:active {
+            transform: scale(0.9);
+        }
+
         .modal-overlay {
             display: none;
             position: fixed;
@@ -426,12 +453,12 @@
         }
 
         .multiplier-input {
-            width: 40px;
-            padding: 3px 6px;
+            width: 50px;
+            padding: 5px 8px;
             border: 1px solid #667eea;
-            border-radius: 6px;
+            border-radius: 8px;
             text-align: center;
-            font-size: 11px;
+            font-size: 13px;
             color: #667eea;
             font-weight: 600;
             outline: none;
@@ -439,15 +466,15 @@
 
         .multiplier-input:focus {
             border-color: #764ba2;
-            box-shadow: 0 0 0 1px rgba(118, 75, 162, 0.1);
+            box-shadow: 0 0 0 2px rgba(118, 75, 162, 0.1);
         }
 
         .multiplier-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 5px 0;
-            border-bottom: 1px solid #f5f5f5;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
         }
 
         .multiplier-item:last-child {
@@ -455,7 +482,7 @@
         }
 
         .multiplier-name {
-            font-size: 11px;
+            font-size: 14px;
             color: #666;
             flex: 1;
         }
@@ -463,20 +490,21 @@
         .multiplier-controls {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 8px;
         }
 
         .reset-btn {
             background: linear-gradient(135deg, #ffa751 0%, #ffe259 100%);
             color: white;
             border: none;
-            padding: 5px 12px;
-            border-radius: 12px;
-            font-size: 10px;
+            padding: 8px 16px;
+            border-radius: 15px;
+            font-size: 12px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
-            margin-top: 6px;
+            margin-top: 10px;
+            width: 100%;
         }
 
         .reset-btn:active {
@@ -489,7 +517,7 @@
             left: 0;
             right: 0;
             background: rgba(255, 255, 255, 0.97);
-            padding: 5px 115px 5px 10px;
+            padding: 5px 165px 5px 10px;
             text-align: center;
             font-size: 8px;
             color: #999;
@@ -601,28 +629,6 @@
             </div>
         </div>
 
-        <!-- 倍数编辑区域 -->
-        <div class="settings-toggle" onclick="toggleMultipliers()">
-            <span class="settings-toggle-text">🎲 自定义倍数</span>
-            <span class="settings-toggle-icon" id="multipliersIcon">▼</span>
-        </div>
-        <div class="settings-content" id="multipliersContent">
-            <div class="settings-section">
-                <div class="settings-section-title">胡法倍数</div>
-                <div id="huMethodMultipliers"></div>
-            </div>
-            <div class="settings-section">
-                <div class="settings-section-title">杠倍数与加分</div>
-                <div id="gangMultipliers"></div>
-            </div>
-            <div class="settings-section">
-                <div class="settings-section-title">牌型倍数</div>
-                <div id="typeMultipliers"></div>
-            </div>
-            <div class="settings-section">
-                <button class="reset-btn" onclick="resetMultipliers()">🔄 恢复默认倍数</button>
-            </div>
-        </div>
 
         <!-- 胡法 -->
         <div class="section">
@@ -663,6 +669,9 @@
 
     </div>
 
+    <!-- 自定义倍数按钮 -->
+    <button class="multiplier-btn" onclick="showMultipliers()">🎲</button>
+
     <!-- 规则说明按钮 -->
     <button class="rules-btn" onclick="showRules()">?</button>
 
@@ -684,6 +693,33 @@
             </div>
             <div class="modal-body" id="rulesBody">
                 <!-- 将通过JS动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 自定义倍数弹窗 -->
+    <div class="modal-overlay" id="multipliersModal" onclick="closeMultipliersIfClickOutside(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title">🎲 自定义倍数</div>
+                <button class="modal-close" onclick="closeMultipliersModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="rules-section">
+                    <div class="rules-section-title">胡法倍数</div>
+                    <div id="huMethodMultipliers"></div>
+                </div>
+                <div class="rules-section">
+                    <div class="rules-section-title">杠倍数与加分</div>
+                    <div id="gangMultipliers"></div>
+                </div>
+                <div class="rules-section">
+                    <div class="rules-section-title">牌型倍数</div>
+                    <div id="typeMultipliers"></div>
+                </div>
+                <div class="rules-section">
+                    <button class="reset-btn" onclick="resetMultipliers()">🔄 恢复默认倍数</button>
+                </div>
             </div>
         </div>
     </div>
@@ -760,12 +796,24 @@
             icon.classList.toggle('open');
         }
 
-        // 切换倍数编辑面板
-        function toggleMultipliers() {
-            const content = document.getElementById('multipliersContent');
-            const icon = document.getElementById('multipliersIcon');
-            content.classList.toggle('open');
-            icon.classList.toggle('open');
+        // 显示自定义倍数弹窗
+        function showMultipliers() {
+            renderMultiplierInputs();
+            const modal = document.getElementById('multipliersModal');
+            modal.classList.add('show');
+        }
+
+        // 关闭自定义倍数弹窗
+        function closeMultipliersModal() {
+            const modal = document.getElementById('multipliersModal');
+            modal.classList.remove('show');
+        }
+
+        // 点击外部关闭倍数弹窗
+        function closeMultipliersIfClickOutside(event) {
+            if (event.target.id === 'multipliersModal') {
+                closeMultipliersModal();
+            }
         }
 
         // 渲染倍数编辑界面
@@ -944,6 +992,19 @@
                 return;
             }
 
+            // 底分互斥逻辑（单选）
+            const baseScoreOptions = ['1分', '2分', '5分', '10分'];
+            if (baseScoreOptions.includes(item)) {
+                // 删除之前的底分选项
+                selectedItems = selectedItems.filter(i => !baseScoreOptions.includes(i));
+            }
+
+            // 封顶互斥逻辑（单选）
+            if (item.includes('封顶')) {
+                // 删除之前的封顶选项
+                selectedItems = selectedItems.filter(i => !i.includes('封顶'));
+            }
+
             // 胡法互斥逻辑
             if (huMethods.includes(item)) {
                 // 删除之前的胡法选项
@@ -1120,7 +1181,6 @@
         window.addEventListener('DOMContentLoaded', function() {
             addItem('1分');
             addItem('32分封顶');
-            renderMultiplierInputs(); // 初始化倍数编辑界面
         });
     </script>
 </body>
