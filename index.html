@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>川麻计分器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            overflow: hidden;
+            padding: 0;
+            padding-top: max(env(safe-area-inset-top, 0px), 0px);
+            padding-bottom: max(env(safe-area-inset-bottom, 0px), 0px);
+            color: #333;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 10px 38px 10px;
+            padding-top: 75px;
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .display-box {
+            background: white;
+            border-radius: 8px;
+            padding: 8px 10px;
+            min-height: 50px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .display-title {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .display-settings {
+            font-size: 9px;
+            color: #999;
+        }
+
+        .selected-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            min-height: 28px;
+        }
+
+        .selected-tag {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            animation: popIn 0.3s ease;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            line-height: 1.2;
+            box-shadow: 0 1px 4px rgba(102, 126, 234, 0.3);
+        }
+
+        .selected-tag:hover {
+            background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+            transform: scale(1.05);
+            box-shadow: 0 2px 6px rgba(245, 87, 108, 0.4);
+        }
+
+        .selected-tag:active {
+            transform: scale(0.95);
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .section {
+            background: white;
+            border-radius: 8px;
+            padding: 8px 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: #764ba2;
+            margin-bottom: 6px;
+            padding-left: 4px;
+            border-left: 3px solid #764ba2;
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .bubble-btn {
+            flex: 0 0 calc(25% - 5px);
+            min-width: 60px;
+            padding: 7px 4px;
+            border: 1.5px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            outline: none;
+        }
+
+        .bubble-btn:active {
+            transform: scale(0.95);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 0 15px rgba(102, 126, 234, 0.5);
+        }
+
+        .bubble-btn:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .bubble-btn.base-score {
+            flex: 0 0 calc(25% - 8px);
+        }
+
+        .bubble-btn.gang {
+            flex: 0 0 calc(25% - 8px);
+        }
+
+        .bubble-btn.type {
+            flex: 0 0 calc(50% - 3px);
+        }
+
+        .bubble-btn.fan-limit {
+            flex: 0 0 calc(33.333% - 4px);
+        }
+
+        .bubble-btn.hu-method {
+            flex: 0 0 calc(50% - 3px);
+        }
+
+        .clear-btn {
+            position: fixed;
+            bottom: calc(38px + env(safe-area-inset-bottom, 0px));
+            right: 10px;
+            width: 45px;
+            height: 45px;
+            padding: 0;
+            border: none;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border-radius: 50%;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 3px 12px rgba(245, 87, 108, 0.4);
+            transition: all 0.2s ease;
+            outline: none;
+            z-index: 101;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .clear-btn:active {
+            transform: scale(0.9);
+        }
+
+        .rules-btn {
+            position: fixed;
+            bottom: calc(38px + env(safe-area-inset-bottom, 0px));
+            right: 60px;
+            width: 45px;
+            height: 45px;
+            padding: 0;
+            border: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 3px 12px rgba(102, 126, 234, 0.4);
+            transition: all 0.2s ease;
+            outline: none;
+            z-index: 101;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .rules-btn:active {
+            transform: scale(0.9);
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            animation: modalIn 0.3s ease;
+        }
+
+        @keyframes modalIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        .modal-close:hover {
+            opacity: 1;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .rules-section {
+            margin-bottom: 20px;
+        }
+
+        .rules-section-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: #764ba2;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .rules-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .rules-item-name {
+            flex: 1;
+        }
+
+        .rules-item-value {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .settings-toggle {
+            background: white;
+            border-radius: 8px;
+            padding: 6px 10px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .settings-toggle-text {
+            font-size: 11px;
+            font-weight: 500;
+            color: #764ba2;
+        }
+
+        .settings-toggle-icon {
+            font-size: 10px;
+            color: #764ba2;
+            transition: transform 0.3s ease;
+        }
+
+        .settings-toggle-icon.open {
+            transform: rotate(180deg);
+        }
+
+        .settings-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .settings-content.open {
+            max-height: 500px;
+        }
+
+        .settings-section {
+            background: white;
+            border-radius: 8px;
+            padding: 8px;
+            margin-top: 6px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+
+        .settings-section-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: #764ba2;
+            margin-bottom: 6px;
+        }
+
+        .settings-button-group {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .settings-btn {
+            flex: 0 0 calc(25% - 5px);
+            padding: 6px 3px;
+            border: 1.5px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            outline: none;
+        }
+
+        .settings-btn:active {
+            transform: scale(0.95);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .multiplier-input {
+            width: 40px;
+            padding: 3px 6px;
+            border: 1px solid #667eea;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 11px;
+            color: #667eea;
+            font-weight: 600;
+            outline: none;
+        }
+
+        .multiplier-input:focus {
+            border-color: #764ba2;
+            box-shadow: 0 0 0 1px rgba(118, 75, 162, 0.1);
+        }
+
+        .multiplier-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .multiplier-item:last-child {
+            border-bottom: none;
+        }
+
+        .multiplier-name {
+            font-size: 11px;
+            color: #666;
+            flex: 1;
+        }
+
+        .multiplier-controls {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #ffa751 0%, #ffe259 100%);
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 6px;
+        }
+
+        .reset-btn:active {
+            transform: scale(0.95);
+        }
+
+        .watermark {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.97);
+            padding: 5px 115px 5px 10px;
+            text-align: center;
+            font-size: 8px;
+            color: #999;
+            border-top: 1px solid #f0f0f0;
+            z-index: 100;
+            line-height: 1.4;
+            padding-bottom: calc(5px + env(safe-area-inset-bottom, 0px));
+        }
+
+        .watermark-author {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .watermark-note {
+            color: #f5576c;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        .empty-hint {
+            color: #999;
+            font-size: 10px;
+            text-align: center;
+            padding: 5px 0;
+        }
+
+        .score-box {
+            position: fixed;
+            top: env(safe-area-inset-top, 0px);
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 8px 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            text-align: center;
+            z-index: 100;
+        }
+
+        .score-label {
+            color: white;
+            font-size: 10px;
+            opacity: 0.95;
+            margin-bottom: 2px;
+        }
+
+        .score-value {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+            line-height: 1.1;
+        }
+
+        .score-detail {
+            color: white;
+            font-size: 9px;
+            margin-top: 4px;
+            opacity: 0.9;
+            line-height: 1.3;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
+</head>
+<body>
+    <!-- 分数显示 (固定顶部) -->
+    <div class="score-box" id="scoreBox">
+        <div class="score-label">最终分数</div>
+        <div class="score-value" id="scoreValue">0</div>
+        <div class="score-detail" id="scoreDetail">当前设置：1分底分，32分封顶</div>
+    </div>
+
+    <div class="container">
+        <!-- 显示区域 -->
+        <div class="display-box">
+            <div class="display-title">
+                <span>已选择：</span>
+                <span class="display-settings" id="displaySettings">底分：1分　上限：32分</span>
+            </div>
+            <div class="selected-items" id="selectedItems">
+                <div class="empty-hint">请点击下方按钮选择...</div>
+            </div>
+        </div>
+
+        <!-- 设置区域 -->
+        <div class="settings-toggle" onclick="toggleSettings()">
+            <span class="settings-toggle-text">⚙️ 底分与封顶设置</span>
+            <span class="settings-toggle-icon" id="settingsIcon">▼</span>
+        </div>
+        <div class="settings-content" id="settingsContent">
+            <div class="settings-section">
+                <div class="settings-section-title">底分</div>
+                <div class="settings-button-group">
+                    <button class="settings-btn" onclick="addItem('1分')">1分</button>
+                    <button class="settings-btn" onclick="addItem('2分')">2分</button>
+                    <button class="settings-btn" onclick="addItem('5分')">5分</button>
+                    <button class="settings-btn" onclick="addItem('10分')">10分</button>
+                </div>
+            </div>
+            <div class="settings-section">
+                <div class="settings-section-title">满分限制</div>
+                <div class="settings-button-group">
+                    <button class="settings-btn" onclick="addItem('16分封顶')">16分</button>
+                    <button class="settings-btn" onclick="addItem('32分封顶')">32分</button>
+                    <button class="settings-btn" onclick="addItem('64分封顶')">64分</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 倍数编辑区域 -->
+        <div class="settings-toggle" onclick="toggleMultipliers()">
+            <span class="settings-toggle-text">🎲 自定义倍数</span>
+            <span class="settings-toggle-icon" id="multipliersIcon">▼</span>
+        </div>
+        <div class="settings-content" id="multipliersContent">
+            <div class="settings-section">
+                <div class="settings-section-title">胡法倍数</div>
+                <div id="huMethodMultipliers"></div>
+            </div>
+            <div class="settings-section">
+                <div class="settings-section-title">杠倍数与加分</div>
+                <div id="gangMultipliers"></div>
+            </div>
+            <div class="settings-section">
+                <div class="settings-section-title">牌型倍数</div>
+                <div id="typeMultipliers"></div>
+            </div>
+            <div class="settings-section">
+                <button class="reset-btn" onclick="resetMultipliers()">🔄 恢复默认倍数</button>
+            </div>
+        </div>
+
+        <!-- 胡法 -->
+        <div class="section">
+            <div class="section-title">胡法</div>
+            <div class="button-group">
+                <button class="bubble-btn hu-method" onclick="addItem('点炮')">点炮</button>
+                <button class="bubble-btn hu-method" onclick="addItem('自摸')">自摸</button>
+                <button class="bubble-btn hu-method" onclick="addItem('杠开')">杠开</button>
+                <button class="bubble-btn hu-method" onclick="addItem('杠点')">杠点</button>
+                <button class="bubble-btn hu-method" onclick="addItem('抢杠胡')">抢杠胡</button>
+                <button class="bubble-btn hu-method" onclick="addItem('海底捞')">海底捞</button>
+                <button class="bubble-btn hu-method" onclick="addItem('自摸海底捞')">自摸海底捞</button>
+            </div>
+        </div>
+
+        <!-- 杠 -->
+        <div class="section">
+            <div class="section-title">杠</div>
+            <div class="button-group">
+                <button class="bubble-btn gang" onclick="addItem('根')">根</button>
+                <button class="bubble-btn gang" onclick="addItem('贴杠')">贴杠</button>
+                <button class="bubble-btn gang" onclick="addItem('碰杠')">碰杠</button>
+                <button class="bubble-btn gang" onclick="addItem('暗杠')">暗杠</button>
+            </div>
+        </div>
+
+        <!-- 牌型 -->
+        <div class="section">
+            <div class="section-title">牌型</div>
+            <div class="button-group">
+                <button class="bubble-btn type" onclick="addItem('屁胡')">屁胡</button>
+                <button class="bubble-btn type" onclick="addItem('大对')">大对</button>
+                <button class="bubble-btn type" onclick="addItem('七小对')">七小对</button>
+                <button class="bubble-btn type" onclick="addItem('清一色')">清一色</button>
+                <button class="bubble-btn type" onclick="addItem('金钩钓')">金钩钓</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 规则说明按钮 -->
+    <button class="rules-btn" onclick="showRules()">?</button>
+
+    <!-- 清除按钮 (固定右下角) -->
+    <button class="clear-btn" onclick="clearAll()">清除</button>
+
+    <!-- 水印 -->
+    <div class="watermark">
+        <div class="watermark-author">产品&程序设计：阿星 与 AI同学 Claude 4.5 | QA测试：长风</div>
+        <div class="watermark-note">⚠️ 仅供个人学习使用 · 禁止商业化</div>
+    </div>
+
+    <!-- 规则说明弹窗 -->
+    <div class="modal-overlay" id="rulesModal" onclick="closeRulesIfClickOutside(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title">📖 规则说明</div>
+                <button class="modal-close" onclick="closeRules()">&times;</button>
+            </div>
+            <div class="modal-body" id="rulesBody">
+                <!-- 将通过JS动态生成 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedItems = [];
+
+        // 默认倍数配置
+        const defaultMultipliers = {
+            '根': 2,
+            '贴杠': 2,
+            '碰杠': 2,
+            '暗杠': 2,
+            '屁胡': 1,
+            '点炮': 1,
+            '自摸': 2,
+            '大对': 2,
+            '七小对': 4,
+            '清一色': 4,
+            '金钩钓': 4,
+            '杠开': 4,
+            '杠点': 2,
+            '抢杠胡': 2,
+            '海底捞': 2,
+            '自摸海底捞': 4
+        };
+
+        const defaultGangBonus = {
+            '贴杠': 1,
+            '碰杠': 2,
+            '暗杠': 2
+        };
+
+        // 从localStorage加载自定义倍数
+        function loadMultipliers() {
+            const saved = localStorage.getItem('customMultipliers');
+            if (saved) {
+                try {
+                    return JSON.parse(saved);
+                } catch (e) {
+                    return { ...defaultMultipliers };
+                }
+            }
+            return { ...defaultMultipliers };
+        }
+
+        function loadGangBonus() {
+            const saved = localStorage.getItem('customGangBonus');
+            if (saved) {
+                try {
+                    return JSON.parse(saved);
+                } catch (e) {
+                    return { ...defaultGangBonus };
+                }
+            }
+            return { ...defaultGangBonus };
+        }
+
+        // 保存倍数到localStorage
+        function saveMultipliers() {
+            localStorage.setItem('customMultipliers', JSON.stringify(multipliers));
+            localStorage.setItem('customGangBonus', JSON.stringify(gangBonus));
+        }
+
+        // 倍数配置（从localStorage加载）
+        let multipliers = loadMultipliers();
+        let gangBonus = loadGangBonus();
+
+        // 切换设置面板
+        function toggleSettings() {
+            const content = document.getElementById('settingsContent');
+            const icon = document.getElementById('settingsIcon');
+            content.classList.toggle('open');
+            icon.classList.toggle('open');
+        }
+
+        // 切换倍数编辑面板
+        function toggleMultipliers() {
+            const content = document.getElementById('multipliersContent');
+            const icon = document.getElementById('multipliersIcon');
+            content.classList.toggle('open');
+            icon.classList.toggle('open');
+        }
+
+        // 渲染倍数编辑界面
+        function renderMultiplierInputs() {
+            // 胡法
+            const huMethods = ['点炮', '自摸', '杠开', '杠点', '抢杠胡', '海底捞', '自摸海底捞'];
+            let huHtml = '';
+            huMethods.forEach(item => {
+                huHtml += `
+                    <div class="multiplier-item">
+                        <span class="multiplier-name">${item}</span>
+                        <div class="multiplier-controls">
+                            <span style="font-size:12px;color:#999;">×</span>
+                            <input type="number" class="multiplier-input" value="${multipliers[item]}"
+                                   onchange="updateMultiplier('${item}', this.value)" min="1" max="100">
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('huMethodMultipliers').innerHTML = huHtml;
+
+            // 杠
+            const gangItems = ['根', '贴杠', '碰杠', '暗杠'];
+            let gangHtml = '';
+            gangItems.forEach(item => {
+                const hasBonus = gangBonus[item] !== undefined;
+                gangHtml += `
+                    <div class="multiplier-item">
+                        <span class="multiplier-name">${item}</span>
+                        <div class="multiplier-controls">
+                            <span style="font-size:12px;color:#999;">×</span>
+                            <input type="number" class="multiplier-input" value="${multipliers[item]}"
+                                   onchange="updateMultiplier('${item}', this.value)" min="1" max="100">
+                            ${hasBonus ? `
+                                <span style="font-size:12px;color:#999;">+</span>
+                                <input type="number" class="multiplier-input" value="${gangBonus[item]}"
+                                       onchange="updateGangBonus('${item}', this.value)" min="0" max="100">
+                                <span style="font-size:11px;color:#999;">分</span>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('gangMultipliers').innerHTML = gangHtml;
+
+            // 牌型
+            const types = ['屁胡', '大对', '七小对', '清一色', '金钩钓'];
+            let typeHtml = '';
+            types.forEach(item => {
+                typeHtml += `
+                    <div class="multiplier-item">
+                        <span class="multiplier-name">${item}</span>
+                        <div class="multiplier-controls">
+                            <span style="font-size:12px;color:#999;">×</span>
+                            <input type="number" class="multiplier-input" value="${multipliers[item]}"
+                                   onchange="updateMultiplier('${item}', this.value)" min="1" max="100">
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('typeMultipliers').innerHTML = typeHtml;
+        }
+
+        // 更新倍数
+        function updateMultiplier(item, value) {
+            const numValue = parseInt(value);
+            if (!isNaN(numValue) && numValue > 0) {
+                multipliers[item] = numValue;
+                saveMultipliers();
+                calculateScore(); // 重新计算分数
+            }
+        }
+
+        // 更新杠加分
+        function updateGangBonus(item, value) {
+            const numValue = parseInt(value);
+            if (!isNaN(numValue) && numValue >= 0) {
+                gangBonus[item] = numValue;
+                saveMultipliers();
+                calculateScore(); // 重新计算分数
+            }
+        }
+
+        // 重置为默认倍数
+        function resetMultipliers() {
+            if (confirm('确定要恢复默认倍数吗？')) {
+                multipliers = { ...defaultMultipliers };
+                gangBonus = { ...defaultGangBonus };
+                saveMultipliers();
+                renderMultiplierInputs();
+                calculateScore();
+            }
+        }
+
+        // 显示规则说明
+        function showRules() {
+            const modal = document.getElementById('rulesModal');
+            const rulesBody = document.getElementById('rulesBody');
+
+            // 动态生成规则内容
+            let html = '';
+
+            // 胡法
+            html += '<div class="rules-section">';
+            html += '<div class="rules-section-title">胡法（单选）</div>';
+            ['点炮', '自摸', '杠开', '杠点', '抢杠胡', '海底捞', '自摸海底捞'].forEach(item => {
+                html += `<div class="rules-item"><span class="rules-item-name">${item}</span><span class="rules-item-value">×${multipliers[item]}</span></div>`;
+            });
+            html += '</div>';
+
+            // 杠
+            html += '<div class="rules-section">';
+            html += '<div class="rules-section-title">杠（可多选）</div>';
+            ['根', '贴杠', '碰杠', '暗杠'].forEach(item => {
+                const bonus = gangBonus[item] ? ` + ${gangBonus[item]}分` : '';
+                html += `<div class="rules-item"><span class="rules-item-name">${item}</span><span class="rules-item-value">×${multipliers[item]}${bonus}</span></div>`;
+            });
+            html += '</div>';
+
+            // 牌型
+            html += '<div class="rules-section">';
+            html += '<div class="rules-section-title">牌型（可多选，大对与七小对互斥）</div>';
+            ['屁胡', '大对', '七小对', '清一色', '金钩钓'].forEach(item => {
+                html += `<div class="rules-item"><span class="rules-item-name">${item}</span><span class="rules-item-value">×${multipliers[item]}</span></div>`;
+            });
+            html += '</div>';
+
+            // 说明
+            html += '<div class="rules-section">';
+            html += '<div class="rules-section-title">计分说明</div>';
+            html += '<div style="font-size:13px;color:#999;line-height:1.6;">';
+            html += '<p style="margin-bottom:8px;">• 基础分数 = 底分 × 所有倍数相乘</p>';
+            html += '<p style="margin-bottom:8px;">• 杠的额外加分在基础分数上累加</p>';
+            html += '<p style="margin-bottom:8px;">• 满分限制：基础分数达到上限后，杠的额外加分仍然有效</p>';
+            html += '<p>• 点击已选择的标签可以删除</p>';
+            html += '</div>';
+            html += '</div>';
+
+            // 版权信息
+            html += '<div class="rules-section" style="border-top:2px solid #f0f0f0;padding-top:15px;">';
+            html += '<div style="text-align:center;font-size:13px;color:#667eea;font-weight:600;margin-bottom:5px;">产品&程序设计：阿星 与 AI同学 Claude 4.5</div>';
+            html += '<div style="text-align:center;font-size:12px;color:#999;margin-bottom:8px;">QA测试：长风</div>';
+            html += '<div style="text-align:center;font-size:12px;color:#f5576c;font-weight:600;">⚠️ 仅供个人学习使用 · 禁止商业化</div>';
+            html += '<div style="text-align:center;font-size:11px;color:#bbb;margin-top:8px;">本工具完全免费开源，请勿用于商业用途</div>';
+            html += '</div>';
+
+            rulesBody.innerHTML = html;
+            modal.classList.add('show');
+        }
+
+        // 关闭规则说明
+        function closeRules() {
+            const modal = document.getElementById('rulesModal');
+            modal.classList.remove('show');
+        }
+
+        // 点击外部关闭
+        function closeRulesIfClickOutside(event) {
+            if (event.target.id === 'rulesModal') {
+                closeRules();
+            }
+        }
+
+        // 胡法选项（互斥）
+        const huMethods = ['点炮', '自摸', '杠开', '杠点', '抢杠胡', '海底捞', '自摸海底捞'];
+
+        // 互斥的牌型
+        const exclusiveTypes = {
+            '大对': '七小对',
+            '七小对': '大对'
+        };
+
+        function addItem(item, event) {
+            // 检查是否为滑动操作，如果是则不执行
+            if (isTouchMove) {
+                return;
+            }
+
+            // 胡法互斥逻辑
+            if (huMethods.includes(item)) {
+                // 删除之前的胡法选项
+                selectedItems = selectedItems.filter(i => !huMethods.includes(i));
+            }
+
+            // 牌型互斥逻辑
+            if (exclusiveTypes[item]) {
+                const excludeItem = exclusiveTypes[item];
+                selectedItems = selectedItems.filter(i => i !== excludeItem);
+            }
+
+            selectedItems.push(item);
+            updateDisplay();
+            calculateScore();
+        }
+
+        function updateDisplay() {
+            const container = document.getElementById('selectedItems');
+            const settingsContainer = document.getElementById('displaySettings');
+
+            // 获取底分和满分限制
+            const baseScoreItem = selectedItems.find(item => item.includes('分') && !item.includes('封顶'));
+            const scoreLimitItem = selectedItems.find(item => item.includes('封顶'));
+
+            // 更新设置显示
+            const baseScoreText = baseScoreItem ? baseScoreItem : '1分';
+            const scoreLimitText = scoreLimitItem ? scoreLimitItem.replace('封顶', '') : '32分';
+            settingsContainer.textContent = `底分：${baseScoreText}　上限：${scoreLimitText}`;
+
+            // 过滤掉底分和满分限制，只显示其他选项
+            const displayItems = selectedItems.filter(item =>
+                !item.includes('分') || (!['1分', '2分', '5分', '10分'].includes(item) && !item.includes('封顶'))
+            ).filter(item => !item.includes('封顶'));
+
+            if (displayItems.length === 0) {
+                container.innerHTML = '<div class="empty-hint">请点击下方按钮选择...</div>';
+                return;
+            }
+
+            container.innerHTML = displayItems.map((item) => {
+                // 找到原始索引
+                const realIndex = selectedItems.indexOf(item);
+                return `<span class="selected-tag" onclick="removeItem(${realIndex})">${item}</span>`;
+            }).join('');
+        }
+
+        function removeItem(index) {
+            selectedItems.splice(index, 1);
+            updateDisplay();
+            calculateScore();
+        }
+
+        function calculateScore() {
+            // 获取底分
+            const baseScoreItem = selectedItems.find(item => item.includes('分') && !item.includes('封顶'));
+            const baseScore = baseScoreItem ? parseInt(baseScoreItem) : 1;
+
+            // 获取满分限制
+            const scoreLimitItem = selectedItems.find(item => item.includes('封顶'));
+            let scoreLimit = scoreLimitItem ? parseInt(scoreLimitItem) : 32;
+
+            // 计算倍数
+            let totalMultiplier = 1;
+            let details = [];
+            let hasMultiplier = false;
+
+            selectedItems.forEach((item) => {
+                if (item.includes('分')) {
+                    return; // 跳过底分和满分限制
+                }
+
+                const multiplier = multipliers[item];
+                if (multiplier) {
+                    totalMultiplier *= multiplier;
+                    details.push(`${item}: x${multiplier}`);
+                    hasMultiplier = true;
+                }
+            });
+
+            // 计算基础分数
+            let baseCalculatedScore = baseScore * totalMultiplier;
+            let finalScore = baseCalculatedScore;
+
+            // 应用满分限制
+            let isLimited = false;
+            if (scoreLimit && baseCalculatedScore > scoreLimit) {
+                finalScore = scoreLimit;
+                isLimited = true;
+            }
+
+            // 计算杠的额外加分（满分后仍可加分）
+            let bonusScore = 0;
+            selectedItems.forEach(item => {
+                if (gangBonus[item]) {
+                    bonusScore += gangBonus[item];
+                }
+            });
+
+            if (bonusScore > 0) {
+                finalScore += bonusScore;
+            }
+
+            // 显示结果
+            document.getElementById('scoreValue').textContent = finalScore;
+
+            // 构建详细说明
+            if (!hasMultiplier && bonusScore === 0) {
+                document.getElementById('scoreDetail').textContent = '请选择胡法或牌型';
+            } else {
+                let detailText = `底分${baseScore}分`;
+                if (details.length > 0) {
+                    detailText += ' | ' + details.join(' | ');
+                }
+                if (isLimited) {
+                    detailText += ` | ${baseScore}×${totalMultiplier}=${baseCalculatedScore} → 封顶${scoreLimit}分`;
+                } else if (totalMultiplier > 1) {
+                    detailText += ` | ${baseScore}×${totalMultiplier}=${baseCalculatedScore}分`;
+                }
+                if (bonusScore > 0) {
+                    detailText += ` | 杠加分+${bonusScore}`;
+                }
+                document.getElementById('scoreDetail').innerHTML = detailText;
+            }
+        }
+
+        function clearAll() {
+            selectedItems = [];
+            // 重新添加默认值
+            selectedItems.push('1分');
+            selectedItems.push('32分封顶');
+            updateDisplay();
+            calculateScore();
+        }
+
+        // 防止双击缩放和滑动误触
+        let lastTouchEnd = 0;
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let isTouchMove = false;
+
+        document.addEventListener('touchstart', function(event) {
+            touchStartX = event.touches[0].clientX;
+            touchStartY = event.touches[0].clientY;
+            isTouchMove = false;
+        }, { passive: true });
+
+        document.addEventListener('touchmove', function(event) {
+            const touchX = event.touches[0].clientX;
+            const touchY = event.touches[0].clientY;
+            const deltaX = Math.abs(touchX - touchStartX);
+            const deltaY = Math.abs(touchY - touchStartY);
+
+            // 如果移动超过10px，标记为滑动
+            if (deltaX > 10 || deltaY > 10) {
+                isTouchMove = true;
+            }
+        }, { passive: true });
+
+        document.addEventListener('touchend', function(event) {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+
+        // 获取是否为滑动操作
+        function isTouchMoving() {
+            return isTouchMove;
+        }
+
+        // 页面加载时初始化默认值
+        window.addEventListener('DOMContentLoaded', function() {
+            addItem('1分');
+            addItem('32分封顶');
+            renderMultiplierInputs(); // 初始化倍数编辑界面
+        });
+    </script>
+</body>
+</html>
+
